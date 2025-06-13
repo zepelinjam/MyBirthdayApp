@@ -70,5 +70,6 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.shreyaspatil.capturable)
     ksp(libs.hilt.compiler)
 }

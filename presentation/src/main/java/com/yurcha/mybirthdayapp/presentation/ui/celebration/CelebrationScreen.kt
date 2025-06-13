@@ -1,34 +1,36 @@
 package com.yurcha.mybirthdayapp.presentation.ui.celebration
 
-import android.net.Uri
-import android.provider.MediaStore
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -37,15 +39,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.core.net.toUri
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.yurcha.mybirthdayapp.presentation.R
 import com.yurcha.mybirthdayapp.presentation.ui.common.ImagePickerDialog
 import com.yurcha.mybirthdayapp.presentation.ui.theme.Dark_blue
+import dev.shreyaspatil.capturable.capturable
+import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalComposeApi::class)
 @Composable
 fun CelebrationScreen(
     viewModel: CelebrationViewModel = hiltViewModel(),
@@ -54,6 +61,10 @@ fun CelebrationScreen(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val theme = remember { CelebrationTheme.entries.random() }
+    var isSharing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    val captureController = rememberCaptureController()
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -64,6 +75,27 @@ fun CelebrationScreen(
                     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                 }
             )
+        }
+    }
+
+    LaunchedEffect(isSharing) {
+        if (isSharing) {
+            // wait for to update the UI
+            kotlinx.coroutines.delay(100)
+
+            scope.launch {
+                val bitmapAsync = captureController.captureAsync()
+                try {
+                    val bitmap = bitmapAsync.await()
+                    shareBitmap(bitmap, context)
+                } catch (error: Throwable) {
+                    Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            // add hided views back
+            kotlinx.coroutines.delay(300)
+            isSharing = false
         }
     }
 
@@ -80,18 +112,35 @@ fun CelebrationScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .capturable(captureController)
             .background(theme.backgroundColor)
     ) {
         // back button
-        Image(
-            painter = painterResource(id = R.drawable.ic_back_temporary),
-            contentDescription = "Back",
-            modifier = Modifier
-                .padding(16.dp)
-                .size(30.dp)
-                .align(Alignment.TopStart)
-                .clickable { onNavigateBack() }
-        )
+        if (!isSharing) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_back_temporary),
+                contentDescription = "Back",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(30.dp)
+                    .align(Alignment.TopStart)
+                    .clickable { onNavigateBack() }
+            )
+        }
+
+        if (!isSharing) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_share_temporary),
+                contentDescription = "Share",
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(30.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        isSharing = true
+                    }
+            )
+        }
 
         // overlay picture
         Image(
@@ -108,7 +157,8 @@ fun CelebrationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 50.dp),
+                .padding(horizontal = 50.dp)
+                .testTag("screenshotContent"),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
@@ -196,15 +246,18 @@ fun CelebrationScreen(
                 }
 
                 // camera button
-                Image(
-                    painter = painterResource(theme.iconCamera),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(cameraSize)
-                        .offset(x = diagonalOffset, y = -diagonalOffset)
-                        .zIndex(3f)
-                        .clickable { isImagePickerVisible = true }
-                )
+
+                if (!isSharing) {
+                    Image(
+                        painter = painterResource(theme.iconCamera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(cameraSize)
+                            .offset(x = diagonalOffset, y = -diagonalOffset)
+                            .zIndex(3f)
+                            .clickable { isImagePickerVisible = true }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -275,4 +328,30 @@ private fun getDigitResId(digit: Char): Int {
         '9' -> R.drawable.ic_9
         else -> R.drawable.ic_0
     }
+}
+
+private fun shareBitmap(imageBitmap: ImageBitmap, context: Context) {
+    val androidBitmap = imageBitmap.asAndroidBitmap()
+
+    val cachePath = File(context.cacheDir, "images")
+    cachePath.mkdirs()
+
+    val file = File(cachePath, "screenshot.png")
+    FileOutputStream(file).use { outputStream ->
+        androidBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+    }
+
+    val uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        file
+    )
+
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/png"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    context.startActivity(Intent.createChooser(intent, "Share via"))
 }
