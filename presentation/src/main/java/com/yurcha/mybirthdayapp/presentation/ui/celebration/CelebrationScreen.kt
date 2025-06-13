@@ -1,6 +1,6 @@
 package com.yurcha.mybirthdayapp.presentation.ui.celebration
 
-import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,70 +23,136 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.yurcha.mybirthdayapp.presentation.R
-import com.yurcha.mybirthdayapp.presentation.ui.utils.rememberFlowWithLifecycle
+import com.yurcha.mybirthdayapp.presentation.ui.theme.Dark_blue
+
 @Composable
 fun CelebrationScreen(
     viewModel: CelebrationViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
+    val context = LocalContext.current
     val theme = remember { CelebrationTheme.entries.random() }
 
-    Box(modifier = Modifier.fillMaxSize().background(theme.backgroundColor)) {
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            viewModel.handleEffect(
+                effect = effect,
+                onNavigateNext = { onNavigateBack() },
+                onShowError = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            )
+        }
+    }
 
-        // Background overlay specific to theme
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(theme.backgroundColor)
+    ) {
+        // back button
+        Image(
+            painter = painterResource(id = R.drawable.ic_back_temporary),
+            contentDescription = "Back",
+            modifier = Modifier
+                .padding(16.dp)
+                .size(30.dp)
+                .align(Alignment.TopStart)
+                .clickable { onNavigateBack() }
+        )
+
+        // overlay picture
         Image(
             painter = painterResource(theme.overlayImage),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize().align(Alignment.BottomCenter),
-            contentScale = ContentScale.Crop
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .zIndex(1f),
+            contentScale = ContentScale.FillWidth
         )
 
+        // main content
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 50.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // baby name
             Text(
                 text = stringResource(id = R.string.today_birthday, state.name).uppercase(),
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 21.sp,
+                letterSpacing = (-0.42).sp,
+                color = Dark_blue,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .width(252.dp)
+                    .height(58.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(13.dp))
 
-            // 2. Left icon + age digits + right icon
+            // Age digits
             AgeDigitsRow(ageValue = state.ageValue)
 
-            // 4. Month/Year text
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // month / years sign
             Text(
                 text = if (state.isAgeInYears) {
-                    stringResource(id = R.string.years_old).uppercase()
+                    if (state.ageValue > 1)
+                        stringResource(id = R.string.years_old).uppercase()
+                    else
+                        stringResource(id = R.string.year_old).uppercase()
                 } else {
-                    stringResource(id = R.string.month_old).uppercase()
-                       },
+                    if (state.ageValue > 1)
+                        stringResource(id = R.string.months_old).uppercase()
+                    else
+                        stringResource(id = R.string.month_old).uppercase()
+                },
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(top = 8.dp)
+                color = Dark_blue,
+                fontSize = 18.sp
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(15.dp))
 
-            // 5. Baby photo in circle with border
-            Box(contentAlignment = Alignment.Center) {
+            // picture
+            val imageSize = 200.dp
+            val borderWidth = 7.dp
+            val cameraSize = 48.dp
+            val radius = imageSize / 2 + borderWidth / 2
+            val diagonalOffset = (radius * 0.7071f)
+
+            Box(
+                modifier = Modifier
+                    .size(imageSize + cameraSize / 2),
+                contentAlignment = Alignment.Center
+            ) {
                 Box(
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(imageSize)
                         .clip(CircleShape)
-                        .border(4.dp, theme.borderColor, CircleShape)
+                        .border(borderWidth, theme.borderColor, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    if (state.photoUri != null) {
+                    if (state.photoUri.isNotBlank()) {
                         Image(
                             painter = rememberAsyncImagePainter(
                                 ImageRequest.Builder(LocalContext.current)
@@ -106,24 +173,27 @@ fun CelebrationScreen(
                     }
                 }
 
-                // 6. Camera icon button
+                // camera button
                 Image(
                     painter = painterResource(theme.iconCamera),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(48.dp)
-                        .align(Alignment.BottomEnd)
-                        .offset(x = 24.dp, y = 24.dp)
-                        .clickable { /*onChangePhoto()*/ }
+                        .size(cameraSize)
+                        .offset(x = diagonalOffset, y = -diagonalOffset)
+                        .zIndex(3f)
+                        .clickable { /* onChangePhoto() */ }
                 )
             }
 
-            // 7. Logo
+            Spacer(modifier = Modifier.height(15.dp))
+
+            // Nanit logo
             Image(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_nanit_logo),
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(top = 16.dp)
+                    .height(20.dp)
+                    .width(59.dp)
                     .align(Alignment.CenterHorizontally)
             )
         }
@@ -137,20 +207,35 @@ private fun AgeDigitsRow(modifier: Modifier = Modifier, ageValue: Int) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
     ) {
-        Image(painterResource(id = R.drawable.ic_left_swirls), contentDescription = null)
+        Image(
+            painter = painterResource(id = R.drawable.ic_left_swirls),
+            contentDescription = null,
+            modifier = Modifier.padding(end = 22.dp)
+        )
 
         Row {
             ageValue.toString().forEach { digit ->
                 val resId = getDigitResId(digit)
-                Image(
-                    painter = painterResource(id = resId),
-                    contentDescription = digit.toString(),
-                    modifier = Modifier.size(40.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .width(51.dp)
+                        .height(88.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = resId),
+                        contentDescription = digit.toString(),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
             }
         }
 
-        Image(painterResource(id = R.drawable.ic_right_swirls), contentDescription = null)
+        Image(
+            painter = painterResource(id = R.drawable.ic_right_swirls),
+            contentDescription = null,
+            modifier = Modifier.padding(start = 22.dp)
+        )
     }
 }
 

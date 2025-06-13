@@ -67,24 +67,11 @@ fun BabyDetailsScreen(
     onNavigateNext: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-//    val effect = rememberFlowWithLifecycle(viewModel.effect)
     var isShowDatePickerDialog by remember { mutableStateOf(false) }
     val dateState = rememberDatePickerState(selectableDates = PastOrPresentSelectableDates)
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    /*
-    LaunchedEffect(Unit) {
-        effect.collect { effect ->
-            when (effect) {
-                is BabyDetailsReducer.Effect.OpenCelebrationScreen -> {
-                    onNavigateNext()
-                }
-
-                is BabyDetailsReducer.Effect.ShowError -> {}
-            }
-        }
-    } */
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -97,7 +84,6 @@ fun BabyDetailsScreen(
             )
         }
     }
-
 
     if (isShowDatePickerDialog) {
         Column(
