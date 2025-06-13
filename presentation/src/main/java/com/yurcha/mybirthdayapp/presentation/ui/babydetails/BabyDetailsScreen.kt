@@ -1,11 +1,7 @@
 package com.yurcha.mybirthdayapp.presentation.ui.babydetails
 
 import android.net.Uri
-import android.provider.MediaStore
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -56,9 +51,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.yurcha.mybirthdayapp.presentation.R
 import com.yurcha.mybirthdayapp.presentation.ui.utils.PastOrPresentSelectableDates
-import androidx.core.net.toUri
-import com.yurcha.mybirthdayapp.presentation.ui.utils.rememberFlowWithLifecycle
-import java.io.File
+import com.yurcha.mybirthdayapp.presentation.ui.common.ImagePickerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -194,65 +187,22 @@ fun BabyDetailsScreen(
                     }
             )
 
-            val cameraLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.TakePicturePreview()
-            ) { bitmap ->
-                bitmap?.let {
-                    val uri = MediaStore.Images.Media.insertImage(
-                        context.contentResolver, it, "baby_photo", null
-                    ).toUri()
+            var isImagePickerVisible by remember { mutableStateOf(false) }
+
+            ImagePickerDialog(
+                isVisible = isImagePickerVisible,
+                onDismiss = { isImagePickerVisible = false },
+                onImageSelected = { uri ->
                     viewModel.onPhotoSelected(uri.toString())
                 }
-            }
-
-            val galleryLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.GetContent()
-            ) { uri ->
-                uri?.let {
-                    val inputStream = context.contentResolver.openInputStream(uri)
-                    val tempFile = File.createTempFile("selected_image", ".jpg", context.cacheDir)
-                    tempFile.outputStream().use { outputStream ->
-                        inputStream?.copyTo(outputStream)
-                    }
-
-                    val cachedImageUri = tempFile.toUri()
-
-                    viewModel.onPhotoSelected(cachedImageUri.toString())
-                }
-            }
-
-            var isImagePickerDialogVisible by remember { mutableStateOf(false) }
-
-            if (isImagePickerDialogVisible) {
-                AlertDialog(
-                    onDismissRequest = { isImagePickerDialogVisible = false },
-                    confirmButton = {},
-                    title = { Text(stringResource(id = R.string.choose_image_source)) },
-                    text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = {
-                                isImagePickerDialogVisible = false
-                                cameraLauncher.launch()
-                            }) {
-                                Text(stringResource(id = R.string.take_photo))
-                            }
-                            Button(onClick = {
-                                isImagePickerDialogVisible = false
-                                galleryLauncher.launch("image/*")
-                            }) {
-                                Text(stringResource(id = R.string.pick_from_gallery))
-                            }
-                        }
-                    }
-                )
-            }
+            )
 
             // Picture preview (circular image)
             Box(
                 modifier = Modifier
                     .size(120.dp)
                     .clickable {
-                        isImagePickerDialogVisible = true
+                        isImagePickerVisible = true
                     },
                 contentAlignment = Alignment.Center
             ) {
