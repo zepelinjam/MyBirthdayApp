@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.yurcha.mybirthdayapp.presentation.ui.babydetails.BabyDetailsScreen
+import com.yurcha.mybirthdayapp.presentation.ui.celebration.CelebrationScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -12,27 +13,20 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = Screen.DetailsScreen.route
     ) {
-        composable(Screen.DetailsScreen.route) {
+        composable(route = Screen.DetailsScreen.route) {
             BabyDetailsScreen(
                 onNavigateNext = {
-                    // handle later
-
-                    /*
-                    navController.currentBackStackEntry?.savedStateHandle?.apply {
-                        set("name", state.name)
-                        set("birthdate", state.birthdate)
-                        set("photoUri", state.photoUri?.toString())
-                    }
-                    navController.navigate(Screen.CelebrationScreen.route) */
+                    navController.navigate(Screen.CelebrationScreen.route)
                 }
             )
         }
-        composable(Screen.CelebrationScreen.route) {
-/*            CelebrationScreen(
-                onBack = {
+
+        composable(route = Screen.CelebrationScreen.route) {
+            CelebrationScreen(
+                onNavigateBack = {
                     navController.popBackStack()
                 }
-            ) */
+            )
         }
     }
 }

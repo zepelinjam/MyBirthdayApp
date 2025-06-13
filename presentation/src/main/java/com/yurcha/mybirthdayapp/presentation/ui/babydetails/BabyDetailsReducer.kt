@@ -35,7 +35,7 @@ class BabyDetailsReducer : Reducer<
 
     @Immutable
     sealed class Effect : Reducer.ViewEffect {
-        data object OpenBirthdayScreen : Effect()
+        data object OpenCelebrationScreen : Effect()
         data class ShowError(val message: String) : Effect()
     }
 
@@ -60,7 +60,7 @@ class BabyDetailsReducer : Reducer<
 
             is Event.ValidateForm -> {
                 if (validate(previousState)) {
-                    previousState to Effect.OpenBirthdayScreen
+                    previousState to Effect.OpenCelebrationScreen
                 } else {
                     previousState to Effect.ShowError("Please fill in all fields")
                 }

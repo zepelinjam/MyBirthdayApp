@@ -2,6 +2,7 @@ package com.yurcha.mybirthdayapp.presentation.ui.babydetails
 
 import android.net.Uri
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -66,24 +67,37 @@ fun BabyDetailsScreen(
     onNavigateNext: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val effect = rememberFlowWithLifecycle(viewModel.effect)
+//    val effect = rememberFlowWithLifecycle(viewModel.effect)
     var isShowDatePickerDialog by remember { mutableStateOf(false) }
     val dateState = rememberDatePickerState(selectableDates = PastOrPresentSelectableDates)
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
-
+    /*
     LaunchedEffect(Unit) {
-        effect.collect { event ->
-            when (event) {
-                is BabyDetailsReducer.Effect.OpenBirthdayScreen -> {
+        effect.collect { effect ->
+            when (effect) {
+                is BabyDetailsReducer.Effect.OpenCelebrationScreen -> {
                     onNavigateNext()
                 }
 
                 is BabyDetailsReducer.Effect.ShowError -> {}
             }
         }
+    } */
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            viewModel.handleEffect(
+                effect = effect,
+                onNavigateNext = { onNavigateNext() },
+                onShowError = { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                }
+            )
+        }
     }
+
 
     if (isShowDatePickerDialog) {
         Column(
@@ -282,7 +296,9 @@ fun BabyDetailsScreen(
 
             // Submit button
             Button(
-                onClick = viewModel::onSubmitClicked,
+                onClick = {
+                    viewModel.onSubmitClicked()
+                },
                 enabled = state.name.isNotBlank() && state.birthday.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {

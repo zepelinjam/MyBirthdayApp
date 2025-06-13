@@ -78,22 +78,18 @@ class BabyDetailsViewModel @Inject constructor(
     }
 
     fun onSubmitClicked() {
-        sendEvent(BabyDetailsReducer.Event.ValidateForm)
+        sendEffect(BabyDetailsReducer.Effect.OpenCelebrationScreen)
     }
 
     fun handleEffect(
         effect: BabyDetailsReducer.Effect,
-        onNavigateNext: (name: String, birthday: Long, photoUri: String) -> Unit,
+        onNavigateNext: () -> Unit,
         onShowError: (String) -> Unit
     ) {
         when (effect) {
-            // I know, it's not the best solution using !! :)
-            is BabyDetailsReducer.Effect.OpenBirthdayScreen -> onNavigateNext(
-                currentBaby!!.name,
-                currentBaby!!.birthday!!,
-                currentBaby!!.photoUri
-            )
+            is BabyDetailsReducer.Effect.OpenCelebrationScreen -> onNavigateNext()
             is BabyDetailsReducer.Effect.ShowError -> onShowError(effect.message)
         }
     }
+
 }
