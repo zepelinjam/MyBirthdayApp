@@ -20,9 +20,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -139,19 +140,23 @@ fun BabyDetailsScreen(
             var isFocused by remember { mutableStateOf(false) }
 
             LaunchedEffect(state.name) {
-                val name = state.name ?: ""
+                val name = state.name
                 nameText = TextFieldValue(
                     text = name,
                     selection = TextRange(name.length)
                 )
             }
 
-            val focusRequester = remember { FocusRequester() }
+            val maxLength = 35 // name is limited to 35 chars to avoid bugs
 
             // Name input
             OutlinedTextField(
                 value = nameText,
-                onValueChange = { nameText = it },
+                onValueChange = {
+                    if (it.text.length <= maxLength) {
+                        nameText = it
+                    }
+                },
                 label = { Text(stringResource(id = R.string.name)) },
                 singleLine = true,
                 modifier = Modifier
@@ -175,17 +180,26 @@ fun BabyDetailsScreen(
             )
 
             // Birthday field
-            OutlinedTextField(
-                value = state.birthday,
-                enabled = false,
-                onValueChange = {}, // no manual input, only date picker
-                label = { Text(stringResource(id = R.string.birthday)) },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        isShowDatePickerDialog = true
-                    }
-            )
+                    .clickable { isShowDatePickerDialog = true }
+            ) {
+                OutlinedTextField(
+                    value = state.birthday,
+                    onValueChange = {},
+                    label = { Text(stringResource(id = R.string.birthday)) },
+                    enabled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        disabledTextColor = LocalContentColor.current.copy(alpha = 1f),
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+            }
 
             var isImagePickerVisible by remember { mutableStateOf(false) }
 

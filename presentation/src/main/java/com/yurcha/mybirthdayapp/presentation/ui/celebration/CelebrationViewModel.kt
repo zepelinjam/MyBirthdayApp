@@ -70,10 +70,6 @@ class CelebrationViewModel @Inject constructor(
         }
     }
 
-    fun onSubmitClicked() {
-        sendEvent(CelebrationReducer.Event.OnShowCelebration)
-    }
-
     fun handleEffect(
         effect: CelebrationReducer.Effect,
         onNavigateNext: () -> Unit,

@@ -80,8 +80,7 @@ fun CelebrationScreen(
 
     LaunchedEffect(isSharing) {
         if (isSharing) {
-            // wait for to update the UI
-            kotlinx.coroutines.delay(100)
+            kotlinx.coroutines.delay(100) // wait for to update the UI
 
             scope.launch {
                 val bitmapAsync = captureController.captureAsync()
