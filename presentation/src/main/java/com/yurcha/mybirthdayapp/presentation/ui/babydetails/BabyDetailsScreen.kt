@@ -70,6 +70,7 @@ fun BabyDetailsScreen(
     var isShowDatePickerDialog by remember { mutableStateOf(false) }
     val dateState = rememberDatePickerState(selectableDates = PastOrPresentSelectableDates)
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
@@ -193,9 +194,6 @@ fun BabyDetailsScreen(
                     }
             )
 
-
-            val context = LocalContext.current
-
             val cameraLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.TakePicturePreview()
             ) { bitmap ->
@@ -229,20 +227,20 @@ fun BabyDetailsScreen(
                 AlertDialog(
                     onDismissRequest = { isImagePickerDialogVisible = false },
                     confirmButton = {},
-                    title = { Text("Choose image source") },
+                    title = { Text(stringResource(id = R.string.choose_image_source)) },
                     text = {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = {
                                 isImagePickerDialogVisible = false
                                 cameraLauncher.launch()
                             }) {
-                                Text("Take Photo")
+                                Text(stringResource(id = R.string.take_photo))
                             }
                             Button(onClick = {
                                 isImagePickerDialogVisible = false
                                 galleryLauncher.launch("image/*")
                             }) {
-                                Text("Pick from Gallery")
+                                Text(stringResource(id = R.string.pick_from_gallery))
                             }
                         }
                     }
