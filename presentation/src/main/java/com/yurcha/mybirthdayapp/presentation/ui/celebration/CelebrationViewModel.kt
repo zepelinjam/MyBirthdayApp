@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.yurcha.mybirthdayapp.domain.model.Baby
 import com.yurcha.mybirthdayapp.domain.usecase.GetBabyUseCase
 import com.yurcha.mybirthdayapp.domain.usecase.UpdateBabyUseCase
+import com.yurcha.mybirthdayapp.domain.utils.calculateAge
 import com.yurcha.mybirthdayapp.presentation.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -40,12 +41,7 @@ class CelebrationViewModel @Inject constructor(
                     val name = it.name
                     val photoUri = it.photoUri
                     val birthday = it.birthday ?: 0L
-                    val birthDate = Instant.ofEpochMilli(birthday).atZone(ZoneId.systemDefault()).toLocalDate()
-                    val now = LocalDate.now()
-                    val period = Period.between(birthDate, now)
-                    val ageValue = period.years.takeIf { it > 0 } ?: period.months
-                    val isYears = period.years > 0
-
+                    val (ageValue, isYears) = calculateAge(birthday)
                     sendEvent(
                         CelebrationReducer.Event.OnBabyLoaded(
                             name = name,
