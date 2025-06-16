@@ -155,6 +155,7 @@ fun BabyDetailsScreen(
                 onValueChange = {
                     if (it.text.length <= maxLength) {
                         nameText = it
+                        viewModel.onNameInputChanged(it.text)
                     }
                 },
                 label = { Text(stringResource(id = R.string.name)) },

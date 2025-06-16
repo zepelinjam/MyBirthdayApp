@@ -8,6 +8,11 @@ import com.yurcha.mybirthdayapp.domain.usecase.GetBabyUseCase
 import com.yurcha.mybirthdayapp.domain.usecase.SaveBabyUseCase
 import com.yurcha.mybirthdayapp.domain.usecase.UpdateBabyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,8 +30,19 @@ class BabyDetailsViewModel @Inject constructor(
     reducer = BabyDetailsReducer()
 ) {
     private var currentBaby: Baby? = null
+    private val _nameFlow = MutableStateFlow("")
+    private val nameFlow = _nameFlow.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            nameFlow
+                .debounce(500)
+                .distinctUntilChanged()
+                .collectLatest {
+                    updateBabyData(name = it)
+                }
+        }
+
         getInitialData()
     }
 
@@ -35,6 +51,7 @@ class BabyDetailsViewModel @Inject constructor(
             getBabyUseCase().collect { result ->
                 result?.let {
                     currentBaby = it
+                    _nameFlow.value = it.name
                     sendEvent(BabyDetailsReducer.Event.OnNameUpdated(it.name))
                     sendEvent(BabyDetailsReducer.Event.OnBirthdayUpdated(it.birthday.toDateFormat()))
                     sendEvent(BabyDetailsReducer.Event.OnPhotoUpdated(it.photoUri))
@@ -69,6 +86,11 @@ class BabyDetailsViewModel @Inject constructor(
         updateBabyData(name = name)
     }
 
+    fun onNameInputChanged(name: String) {
+        _nameFlow.value = name
+        sendEvent(BabyDetailsReducer.Event.OnNameUpdated(name))
+    }
+
     fun onBirthdayChanged(birthday: Long?) {
         updateBabyData(birthday = birthday)
     }
@@ -91,5 +113,4 @@ class BabyDetailsViewModel @Inject constructor(
             is BabyDetailsReducer.Effect.ShowError -> onShowError(effect.message)
         }
     }
-
 }
