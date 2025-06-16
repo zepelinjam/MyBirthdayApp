@@ -5,8 +5,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 /**
  * Light default theme color scheme
@@ -58,6 +61,18 @@ fun MyBirthdayAppTheme(
     )
 
     val tintTheme = TintTheme()
+
+    // 🔧 Add status bar customization here
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor = colorScheme.surface
+    val useDarkIcons = statusBarColor.luminance() > 0.5f
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = statusBarColor,
+            darkIcons = useDarkIcons
+        )
+    }
 
     CompositionLocalProvider(
         LocalGradientColors provides gradientColors,

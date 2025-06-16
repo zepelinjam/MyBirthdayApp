@@ -8,11 +8,7 @@ import com.yurcha.mybirthdayapp.domain.utils.calculateAge
 import com.yurcha.mybirthdayapp.presentation.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.time.Instant
 import javax.inject.Inject
-import java.time.LocalDate
-import java.time.Period
-import java.time.ZoneId
 
 @HiltViewModel
 class CelebrationViewModel @Inject constructor(

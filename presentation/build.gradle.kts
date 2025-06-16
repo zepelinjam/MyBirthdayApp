@@ -66,6 +66,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.kotlinx.datetime)
     implementation(libs.accompanist.permissions)
+    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.accompanist.placeholder.material3)
     implementation(libs.androidx.browser)
     implementation(libs.hilt.android)
