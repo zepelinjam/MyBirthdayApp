@@ -91,16 +91,18 @@ fun CelebrationScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(horizontal = 50.dp) // left and right space, as required at Figma
+                .fillMaxHeight()
+                .padding(horizontal = 50.dp)
                 .padding(top = 20.dp)
-                .zIndex(1f)
         ) {
-            // Age section
+            // Spacer takes 1f, pushes the age section down
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Age section centered in the middle space
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.TopCenter
+                    .fillMaxWidth().zIndex(3f),
+                contentAlignment = Alignment.Center
             ) {
                 AgeContentSection(
                     name = state.name,
@@ -109,29 +111,28 @@ fun CelebrationScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(15.dp)) // space numbers and picture, as mentioned in Figma
+            // Spacer takes 1f, pushes the age section up from bottom
+            Spacer(modifier = Modifier.weight(1f))
 
-            // Photo + logo part
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.BottomCenter // pinned to the bottom side of the container
+            // Photo + logo section pinned to bottom with margin (e.g., 50.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 190.dp), // bottom margin (approximate value)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    PhotoSection(
-                        photoUri = state.photoUri,
-                        theme = theme,
-                        onCameraClick = { isImagePickerVisible = true },
-                        isSharing = isSharing
-                    )
-                    Spacer(modifier = Modifier.height(15.dp)) // space between logo and picture, as mentioned in Figma
-                    Image(
-                        painter = painterResource(R.drawable.ic_nanit_logo),
-                        contentDescription = null,
-                        modifier = Modifier.size(width = 59.dp, height = 20.dp)
-                    )
-                }
+                PhotoSection(
+                    photoUri = state.photoUri,
+                    theme = theme,
+                    onCameraClick = { isImagePickerVisible = true },
+                    isSharing = isSharing
+                )
+                Spacer(modifier = Modifier.height(15.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_nanit_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(width = 59.dp, height = 20.dp).zIndex(3f)
+                )
             }
         }
 
