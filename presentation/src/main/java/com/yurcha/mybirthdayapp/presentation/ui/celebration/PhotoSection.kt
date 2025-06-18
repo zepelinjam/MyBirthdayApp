@@ -27,7 +27,8 @@ fun PhotoSection(
     photoUri: String,
     theme: CelebrationTheme,
     onCameraClick: () -> Unit,
-    isSharing: Boolean
+    isSharing: Boolean,
+    modifier: Modifier = Modifier
 ) {
     val imageSize = 200.dp
     val borderWidth = 7.dp
@@ -37,7 +38,7 @@ fun PhotoSection(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         Box(
             modifier = Modifier

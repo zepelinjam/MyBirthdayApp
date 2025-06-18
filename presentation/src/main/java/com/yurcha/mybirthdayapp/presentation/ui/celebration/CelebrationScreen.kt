@@ -50,6 +50,8 @@ fun CelebrationScreen(
     var isSharing by remember { mutableStateOf(false) }
     var isImagePickerVisible by remember { mutableStateOf(false) }
 
+    val customPaddingBelow = 110.dp // padding from the bottom side to the Nanit logo
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             viewModel.handleEffect(
@@ -88,20 +90,31 @@ fun CelebrationScreen(
             .capturable(captureController)
             .background(theme.backgroundColor)
     ) {
+        // Background image
+        Image(
+            painter = painterResource(theme.overlayImage),
+            contentDescription = null,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter) // pinned to the bottom side of the screen as required
+                .zIndex(2f)
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(horizontal = 50.dp)
                 .padding(top = 20.dp)
+                .zIndex(1f)
         ) {
-            // Spacer takes 1f, pushes the age section down
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f)) // helps center between top and baby image
 
-            // Age section centered in the middle space
             Box(
                 modifier = Modifier
-                    .fillMaxWidth().zIndex(3f),
+                    .fillMaxWidth()
+                    .zIndex(1f),
                 contentAlignment = Alignment.Center
             ) {
                 AgeContentSection(
@@ -111,43 +124,32 @@ fun CelebrationScreen(
                 )
             }
 
-            // Spacer takes 1f, pushes the age section up from bottom
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f)) // helps center between top and baby image
 
-            // Photo + logo section pinned to bottom with margin (e.g., 50.dp)
-            Column(
+            // Baby image
+            PhotoSection(
+                photoUri = state.photoUri,
+                theme = theme,
+                onCameraClick = { isImagePickerVisible = true },
+                isSharing = isSharing,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 190.dp), // bottom margin (approximate value)
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                PhotoSection(
-                    photoUri = state.photoUri,
-                    theme = theme,
-                    onCameraClick = { isImagePickerVisible = true },
-                    isSharing = isSharing
-                )
-                Spacer(modifier = Modifier.height(15.dp))
-                Image(
-                    painter = painterResource(R.drawable.ic_nanit_logo),
-                    contentDescription = null,
-                    modifier = Modifier.size(width = 59.dp, height = 20.dp).zIndex(3f)
-                )
-            }
+                    .padding(bottom = customPaddingBelow + 15.dp) // padding as required in Figma
+            )
         }
 
-        // Background image
+        // Nanit logo
         Image(
-            painter = painterResource(theme.overlayImage),
+            painter = painterResource(R.drawable.ic_nanit_logo),
             contentDescription = null,
-            contentScale = ContentScale.FillWidth,
             modifier = Modifier
-                .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .zIndex(2f)
+                .padding(bottom = customPaddingBelow) // custom padding from the bottom side of the screen
+                .size(width = 59.dp, height = 20.dp)
+                .zIndex(3f)
         )
 
-        // Two control buttons at the top of the screen
+        // Control buttons (at the top of the screen)
         if (!isSharing) {
             ControlButtonsSection(
                 onBack = onNavigateBack,
