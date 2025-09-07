@@ -1,59 +1,78 @@
-🎂 **MyBirthdayApp – Android Test Project**
+# 🎂 MyBirthdayApp
 
-This is a test Android project created as part of an assignment. The goal was to build a simple and fun birthday screen for a baby, allowing the user to add a photo and share a celebratory screen.
+This is a small Android test project created as part of an assignment for one of the companies.
 
-📱 **Overview**
-The app displays a birthday screen with the following features:
+The goal was to build a simple and fun birthday screen for a baby, allowing the user to add a photo and share a celebratory screen.
 
-Replace the default image with one from the camera or gallery.
+The assets and UI requirements were provided by the customer via Figma.
 
-Display a custom baby birthday layout.
+---
 
-Share the screen (excluding UI buttons like "Share", "Camera", and "Close").
+<details>
+  <summary>📋 Specifications from the customer</summary>
 
-✅ **Key Features**
-1. Camera Icon Functionality
-Added a camera icon as per UI design.
 
-Clicking it opens a chooser to:
+The emphasis in the project should be on demonstrating development capabilities
+and practices. The product should look clean, follow UI design and function
+properly. The code should be as readable as possible. And the most important thing is paying attention to details.
 
-Select an image from the gallery.
+---
 
-Capture a photo using the camera.
+1. Users should be able to open the app and see the details screen. The UI for this
+   screen is not too important. No need to invest time in it. Screen should include the
+   following elements:  
+   a. App title  
+   b. Name  
+   c. Birthday  
+   d. Picture  
+   e. “Show birthday screen” button (disabled while name & birthday are empty)
 
-Replaces the default image with the chosen one.
+2. Users should be able to edit the elements. All elements should be persistent
+   between app launches:  
+   a. Name - text  
+   b. Birthday - date picker  
+   c. Picture - select from gallery or take a photo
 
-2. **Share Functionality**
-Added a "Share the news" button.
+3. Users should be able to see the birthday screen by pushing the “Show birthday
+   screen” button. Birthday screen should follow the design and use the attached UI
+   assets. For this screen the design is important. Pay attention to details and
+   stick to original design. Font types can be ignored. Screen logic:  
+   a. The birthday screen has 3 visual options. One should be chosen randomly
+   every time you enter the screen.  
+   b. Birthdays are shown by months until 1 year and then in years. The correct
+   age should be displayed according to the baby's birthday.  
+   c. If the name is too long for one line the title will occupy two lines (see screen
+   design).  
+   d. Pushing the close button (top left corner) will return to the previous screen.
 
-Clicking it opens the native share menu.
+4. Users should be able to change picture:  
+   a. “Add camera” icon according to screen design.  
+   b. Pushing the icon will prompt you to choose a picture from the gallery or take
+   a photo.  
+   c. After the picture was chosen it should replace the default picture.
 
-Shared image excludes:
+5. Users should be able to share the screen:  
+   a. Add the “Share the news” button.  
+   b. Pushing the button will open the share menu.  
+   c. The shared image should not include the share button, the camera icon or
+   the close button.
 
-Share button
+</details>
 
-Camera icon
+---
 
-Close button
+## 🛠️ Technical Implementation (Developer’s choice)
 
-🧰 **Tech Stack**
-Kotlin
+- **Language:** Kotlin
+- **Architecture:** Clean Architecture / MVI
+- **UI:** Jetpack Compose
+- **Asynchronous:** Coroutines / Flow
+- **Dependency Injection:** Hilt
+- **Database:** Room
+- **Screenshot capturing:** [Capturable](https://github.com/PatilShreyas/Capturable)
 
-Jetpack Compose
+---
 
-Room
+## ✅ Conclusion
 
-Clean Architecture (with MVI pattern)
-
-Hilt for dependency injection
-
-[dev.shreyaspatil:capturable](https://github.com/PatilShreyas/Capturable) for composable screenshot capturing
-
-🗂️ **Project Structure**
-The project follows Clean Architecture principles:
-
-Presentation (Jetpack Compose UI + MVI)
-
-Domain (Use cases, models)
-
-Data (Room DB, repository implementation)
+The project was completed, and all requirements were successfully implemented.
